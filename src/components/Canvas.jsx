@@ -1,55 +1,93 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import * as fabric from "fabric";
-import { useLocation } from "react-router-dom";
 
 const Canvas = () => {
-  const { state } = useLocation(); // Get the image URL from the passed state
-  const canvasRef = useRef(null);
-  const [canvas, setCanvas] = useState(null);
+  const canvasRef = useRef(null); 
+  const fabricCanvasRef = useRef(null); 
+  const [searchParams] = useSearchParams();
+  const imgUrl = searchParams.get("img");
 
-  // Initialize the canvas
   useEffect(() => {
-    const initCanvas = new fabric.Canvas(canvasRef.current, {
-      width: 800,
-      height: 600,
+    
+    const canvas = new fabric.Canvas(canvasRef.current, {
+      width: 400,
+      height: 350,
       backgroundColor: "white",
     });
-    setCanvas(initCanvas);
+    fabricCanvasRef.current = canvas; 
 
-    // Load the selected image onto the canvas if it exists
-    if (state && state.imageUrl) {
-      FabricImage.fromURL(state.imageUrl, (img) => {
-        img.set({
-          left: 50,
-          top: 50,
-          angle: 0,
-        });
-        initCanvas.add(img); // Add image to canvas
-        initCanvas.renderAll();
+    const imgDisplay = document.createElement("img");
+    imgDisplay.src = imgUrl;
+   imgDisplay.crossOrigin = "anonymous"; 
+
+    imgDisplay.onload = () => {
+      const img = new fabric.Image(imgDisplay);
+      img.set({
+        left: canvas.width / 2 - img.width / 2,
+        top: canvas.height / 2 - img.height / 2,
+        scaleX: 200 / img.width, 
+        scaleY: 200 / img.height, 
       });
-    }
 
-    return () => initCanvas.dispose();
-  }, [state]);
+      canvas.add(img);
+      canvas.centerObject(img);
+      canvas.setActiveObject(img);
+      canvas.renderAll();
+    };
 
-  // Function to add text to the canvas
+    return () => {
+      canvas.dispose();
+    };
+  }, [imgUrl]);
+
+
   const addText = () => {
+    const canvas = fabricCanvasRef.current; 
     if (canvas) {
       const text = new fabric.Textbox("Your Text Here", {
-        left: 50,
-        top: 50,
-        width: 200,
+        left: 100,
+        top: 100,
+        width: 300,
         fontSize: 20,
+        fill: "black",
       });
       canvas.add(text);
+      canvas.setActiveObject(text); 
+      canvas.renderAll();
+    }
+  };
+
+  const downloadCanvas = () => {
+    const canvas = fabricCanvasRef.current;
+    if (canvas) {
+      const dataURL = canvas.toDataURL({
+        format: "png",
+        quality: 1.0, 
+      });
+      const link = document.createElement("a");
+      link.href = dataURL;
+      link.download = "canvas-image.png"; 
+      link.click(); 
     }
   };
 
   return (
     <div>
       <h1>Canvas Editor</h1>
-      <button onClick={addText}>Add Text</button>
-      <canvas ref={canvasRef} id="canvas"></canvas>
+      <button onClick={addText} style={{ marginBottom: "10px" }}>
+        Add Text
+      </button>
+      <button onClick={downloadCanvas} style={{ marginBottom: "10px" }}>
+        Download Canvas
+      </button>
+      <canvas
+        ref={canvasRef}
+        id="canvas"
+        style={{ border: "1px solid #ccc" }}
+      ></canvas>
+
+      <Link to={"/"}>Go back</Link>
     </div>
   );
 };

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://api.unsplash.com/search/photos";
-const CLIENT_ID = "4lO6lGmS1TrSyHyIdW28qsmKlLni5xIqGpzgX-p2qXs"; // Unsplash API Client ID
+const CLIENT_ID = "4lO6lGmS1TrSyHyIdW28qsmKlLni5xIqGpzgX-p2qXs"; 
 
 const SearchPage = () => {
-  const [query, setQuery] = useState(""); // User input for the search
-  const [results, setResults] = useState([]); // Store search results
+  const [query, setQuery] = useState(""); 
+  const [results, setResults] = useState([]); 
   const navigate = useNavigate();
 
   const handleSearch = async () => {
@@ -25,14 +25,14 @@ const SearchPage = () => {
       }
 
       const data = await response.json();
-      setResults(data.results); // Update results with the API response
+      setResults(data.results); 
     } catch (error) {
-      alert(error.message); // Handle any errors
+      alert(error.message); 
     }
   };
 
   const handleEdit = (imageUrl) => {
-    navigate("/edit", { state: { imageUrl } }); // Pass the selected image URL to Canvas
+    navigate(`/edit?img=${imageUrl}`); 
   };
 
   return (
@@ -42,14 +42,14 @@ const SearchPage = () => {
         type="text"
         placeholder="Search for images..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)} // Update the query state on input change
+        onChange={(e) => setQuery(e.target.value)} 
       />
       <button onClick={handleSearch}>Search</button>
       <div className="results">
         {results.map((image) => (
           <div key={image.id} className="image-result">
             <img src={image.urls.thumb} alt={image.alt_description} />
-            <button onClick={() => handleEdit(image.urls.full)}>Add Captions</button>
+            <button onClick={() => handleEdit(image.urls.thumb)}>Add Captions</button>
           </div>
         ))}
       </div>
